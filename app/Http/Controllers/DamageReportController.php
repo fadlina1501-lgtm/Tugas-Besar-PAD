@@ -34,16 +34,23 @@ class DamageReportController extends Controller
 
         DB::transaction(function () use ($data) {
             $reportedAt = now();
-            $report = new DamageReport([
+            $report = DamageReport::create([
                 'report_number' => 'DR-'.$reportedAt->format('Ymd').'-'.Str::upper(Str::random(5)),
                 'reporter_id' => auth()->id(),
                 'asset_id' => $data['asset_id'],
                 'description' => $data['description'],
+                'reported_at' => $reportedAt,
+                'status' => 'Submitted',
             ]);
-            $report->submit();
 
-            // Sistem membuat tiket dengan status Pending Verification secara otomatis.
-            MaintenanceTicket::buatDariLaporan($report);
+            // Workflow final: each report immediately receives a ticket awaiting verification.
+            MaintenanceTicket::create([
+                'ticket_number' => 'TCK-'.$reportedAt->format('ymd').'-'.Str::upper(Str::random(5)),
+                'damage_report_id' => $report->id,
+                'status' => 'Pending Verification',
+                'opened_at' => $reportedAt,
+                'sla_deadline' => $reportedAt->copy()->addHours(24),
+            ]);
         });
 
         return redirect()->route('reports.index')->with('success', 'Laporan dan tiket maintenance berhasil dibuat. Tiket menunggu verifikasi Sarpras.');
@@ -58,11 +65,17 @@ class DamageReportController extends Controller
         ]);
 
         DB::transaction(function () use ($report, $data) {
-            $report->validasi(
-                auth()->user(),
-                $data['decision'] === 'verified',
-                $data['verification_note'] ?? null
-            );
+            $verified = $data['decision'] === 'verified';
+            $report->update([
+                'status' => $verified ? 'Verified' : 'Need Revision',
+                'verified_by' => auth()->id(),
+                'verification_note' => $data['verification_note'] ?? null,
+            ]);
+            // Null-safe for older reports that existed before tickets were automatic.
+            $ticket = $report->ticket()->first();
+            if ($ticket) {
+                $ticket->update(['status' => $verified ? 'Open' : 'Pending Verification']);
+            }
         });
 
         return back()->with('success', $data['decision'] === 'verified'

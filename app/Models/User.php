@@ -21,7 +21,6 @@ class User extends Authenticatable
         'manajemen' => 'Manajemen',
     ];
 
-    public function getRole(): string { return $this->role; }
     public function roleLabel(): string { return self::ROLES[$this->role] ?? ucfirst($this->role); }
     public function damageReports() { return $this->hasMany(DamageReport::class, 'reporter_id'); }
     public function assignedWorkOrders() { return $this->hasMany(WorkOrder::class, 'technician_id'); }

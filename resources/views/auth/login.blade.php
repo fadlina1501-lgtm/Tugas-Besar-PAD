@@ -1,12 +1,70 @@
-<!doctype html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Login · Campus Facility</title><link rel="stylesheet" href="{{ asset('css/cfm.css') }}"></head>
-<body class="login-body"><div class="login-layout"><section class="login-brand-panel"><a class="brand brand-light" href="#"><span class="brand-mark">CF</span><span><strong>Campus Facility</strong><small>Maintenance System</small></span></a><div class="login-hero"><div class="hero-pill"><span class="dot"></span> FACILITY OPERATIONS PLATFORM</div><h1>Every facility.<br><em>Under control.</em></h1><p>Kelola fasilitas lebih efektif melalui pemantauan aset dan perencanaan pemeliharaan yang terstruktur.</p><div class="hero-stats"><div><strong>360°</strong><span>Asset visibility</span></div><div><strong>24/7</strong><span>Maintenance tracking</span></div><div><strong>Live</strong><span>Cost monitoring</span></div></div></div><div class="login-brand-footer">GEDUNG B CACUK <span>•</span> FACILITY &amp; LIFE-CYCLE COST</div></section>
-<section class="login-form-panel"><div class="login-form-wrap"><div class="mobile-brand"><span class="brand-mark">CF</span><strong>Campus Facility</strong></div><div class="eyebrow">SELAMAT DATANG KEMBALI</div><h2>Masuk ke workspace</h2><p class="muted intro">Gunakan akun terdaftar untuk melanjutkan.</p>
-@if(session('success'))<div class="alert alert-success">{{ session('success') }}</div>@endif
-@if($errors->any())<div class="alert alert-error">{{ $errors->first() }}</div>@endif
-<form method="POST" action="{{ route('login.submit') }}" class="form-stack">@csrf
-<div class="field"><label for="role">Masuk sebagai</label><select id="role" name="role" required><option value="pengguna" @selected(old('role')==='pengguna')>Pengguna Fasilitas</option><option value="sarpras" @selected(old('role')==='sarpras')>Sarpras</option><option value="teknisi" @selected(old('role')==='teknisi')>Teknisi</option><option value="manajemen" @selected(old('role')==='manajemen')>Manajemen</option></select></div>
-<div class="field"><label for="email">Email</label><input id="email" type="email" name="email" value="{{ old('email') }}" placeholder="nama@kampus.ac.id" autocomplete="username" required autofocus></div>
-<div class="field"><label for="password">Password</label><input id="password" type="password" name="password" placeholder="Masukkan password" autocomplete="current-password" required></div>
-<label class="check-row"><input type="checkbox" name="remember" value="1"> Ingat saya di perangkat ini</label>
-<button class="btn btn-primary btn-full" type="submit">Masuk ke sistem <span>→</span></button></form>
-<div class="demo-box"><strong>Akun demo setelah seeding</strong><small>Email: user@campus.test / sarpras@campus.test / teknisi@campus.test / manajemen@campus.test</small><small>Password semua akun: <code>password123</code></small></div><p class="login-legal">Akses hanya untuk pengguna yang terdaftar. Seluruh aktivitas operasional harus mengikuti prosedur kampus.</p></div></section></div></body></html>
+<!doctype html>
+<html lang="id">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Login · Campus Facility</title>
+    <link rel="stylesheet" href="{{ asset('css/cfm.css') }}">
+</head>
+<body class="login-body">
+<div class="login-layout">
+    <section class="login-brand-panel">
+        <a class="brand brand-light" href="#">
+            <span class="brand-mark">CF</span>
+            <span><strong>Campus Facility</strong><small>Maintenance System</small></span>
+        </a>
+
+        <div class="login-hero">
+            <div class="hero-pill"><span class="dot"></span> FACILITY OPERATIONS PLATFORM</div>
+            <h1>Every facility.<br><em>Under control.</em></h1>
+            <p>Kelola fasilitas lebih efektif melalui pemantauan aset dan perencanaan pemeliharaan yang terstruktur.</p>
+            <div class="hero-stats">
+                <div><strong>360°</strong><span>Asset visibility</span></div>
+                <div><strong>24/7</strong><span>Maintenance tracking</span></div>
+                <div><strong>Live</strong><span>Cost monitoring</span></div>
+            </div>
+        </div>
+
+        <div class="login-brand-footer">GEDUNG B CACUK <span>•</span> FACILITY &amp; LIFE-CYCLE COST</div>
+    </section>
+
+    <section class="login-form-panel">
+        <div class="login-form-wrap">
+            <div class="mobile-brand"><span class="brand-mark">CF</span><strong>Campus Facility</strong></div>
+            <div class="eyebrow">SELAMAT DATANG KEMBALI</div>
+            <h2>Masuk ke workspace</h2>
+            <p class="muted intro">Gunakan email dan password akun terdaftar untuk melanjutkan.</p>
+
+            @if(session('success'))
+                <div class="alert alert-success">{{ session('success') }}</div>
+            @endif
+
+            @if($errors->any())
+                <div class="alert alert-error">{{ $errors->first() }}</div>
+            @endif
+
+            <form method="POST" action="{{ route('login.submit') }}" class="form-stack">
+                @csrf
+                <div class="field">
+                    <label for="email">Email</label>
+                    <input id="email" type="email" name="email" value="{{ old('email') }}" placeholder="nama@kampus.ac.id" autocomplete="username" required autofocus>
+                </div>
+                <div class="field">
+                    <label for="password">Password</label>
+                    <input id="password" type="password" name="password" placeholder="Masukkan password" autocomplete="current-password" required>
+                </div>
+                <label class="check-row"><input type="checkbox" name="remember" value="1"> Ingat saya di perangkat ini</label>
+                <button class="btn btn-primary btn-full" type="submit">Masuk ke sistem <span>→</span></button>
+            </form>
+
+            <div class="demo-box">
+                <strong>Akun demo setelah seeding</strong>
+                <small>Email: user@campus.test / sarpras@campus.test / teknisi@campus.test / manajemen@campus.test</small>
+                <small>Password semua akun: <code>password123</code></small>
+            </div>
+            <p class="login-legal">Akses hanya untuk pengguna yang terdaftar. Seluruh aktivitas operasional harus mengikuti prosedur kampus.</p>
+        </div>
+    </section>
+</div>
+</body>
+</html>

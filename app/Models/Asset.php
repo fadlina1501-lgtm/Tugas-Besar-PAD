@@ -67,5 +67,19 @@ class Asset extends Model
 
     public function getLifeCycleCostAttribute(): float { return $this->calculateLifeCycleCost(); }
 
+    /** Preliminary decision support; final replacement decisions remain with management. */
+    public function getRekomendasiKelayakan(): string
+    {
+        $maintenanceCost = $this->getTotalMaintenanceCost();
+        $purchasePrice = (float) ($this->purchase_price ?? 0);
+        $failureCount = $this->failure_count;
 
+        if ($this->condition === 'Rusak' && $failureCount >= 3) {
+            return 'Prioritas evaluasi/penggantian';
+        }
+        if ($this->condition !== 'Baik' || ($purchasePrice > 0 && $maintenanceCost >= $purchasePrice)) {
+            return 'Perlu evaluasi';
+        }
+        return 'Layak dipertahankan';
+    }
 }

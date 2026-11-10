@@ -7,28 +7,19 @@
 <div class="page-intro">
     <div>
         <h2>Daftar tiket pemeliharaan</h2>
-        <p class="muted">Periksa laporan yang telah diverifikasi, buat work order, dan tetapkan teknisi.</p>
+        <p class="muted">Tiket dibuat otomatis saat laporan dikirim. Setelah diverifikasi Sarpras, tiket masuk antrean penugasan teknisi.</p>
     </div>
     <span class="panel-tag">SLA DEFAULT · 24 JAM</span>
 </div>
 
 <div class="panel">
     <div class="panel-heading">
-        <div>
-            <h3>Antrean tiket</h3>
-            <p>{{ $tickets->total() }} tiket dalam sistem</p>
-        </div>
+        <div><h3>Ticket queue</h3><p>{{ $tickets->total() }} tiket dalam sistem</p></div>
     </div>
-
     <div class="table-wrap">
         <table>
             <thead>
-                <tr>
-                    <th>Tiket / SLA</th>
-                    <th>Laporan &amp; aset</th>
-                    <th>Status</th>
-                    <th>Work order / penugasan</th>
-                </tr>
+                <tr><th>Tiket / SLA</th><th>Laporan &amp; aset</th><th>Status</th><th>Work order / tindakan</th></tr>
             </thead>
             <tbody>
                 @forelse($tickets as $ticket)
@@ -37,9 +28,7 @@
                             <strong>{{ $ticket->ticket_number }}</strong>
                             <small>Dibuat {{ $ticket->opened_at->format('d M Y, H:i') }}</small>
                             <small>Deadline: {{ $ticket->sla_deadline->format('d M Y, H:i') }}</small>
-                            @if($ticket->is_sla_breached)
-                                <span class="badge badge-red">SLA BREACH</span>
-                            @endif
+                            @if($ticket->is_sla_breached)<span class="badge badge-red">SLA BREACH</span>@endif
                         </td>
                         <td>
                             <strong>{{ $ticket->damageReport->asset->name }}</strong>
@@ -47,16 +36,15 @@
                             <small>Pelapor: {{ $ticket->damageReport->reporter->name }}</small>
                         </td>
                         <td>
-                            <span class="badge {{ $ticket->is_sla_breached ? 'badge-red' : ($ticket->status === 'Completed' ? 'badge-green' : 'badge-blue') }}">
-                                {{ $ticket->status }}
-                            </span>
+                            <span class="badge {{ $ticket->is_sla_breached ? 'badge-red' : ($ticket->status === 'Completed' ? 'badge-green' : 'badge-blue') }}">{{ $ticket->status }}</span>
+                            @if($ticket->is_sla_breached)<small><span class="badge badge-red">SLA BREACH</span></small>@endif
                         </td>
                         <td>
                             @if($ticket->workOrder)
                                 <strong>{{ $ticket->workOrder->work_order_number }}</strong>
                                 <small>{{ $ticket->workOrder->maintenanceType->name }} · {{ $ticket->workOrder->technician->name }}</small>
-                                <small>Status work order: {{ $ticket->workOrder->status }}</small>
-                            @elseif($ticket->status === 'Open')
+                                <small>Status: {{ $ticket->workOrder->status }}</small>
+                            @elseif($ticket->status === 'Open' && auth()->user()->role === 'sarpras')
                                 <details class="inline-details">
                                     <summary class="btn btn-primary btn-sm">＋ Buat work order</summary>
                                     <form class="compact-form" method="POST" action="{{ route('tickets.work-orders.store', $ticket) }}">
@@ -78,10 +66,11 @@
                                             </select>
                                         </div>
                                         <div class="field">
-                                            <label>Instruksi pekerjaan</label>
-                                            <textarea name="notes" rows="2" placeholder="Instruksi awal untuk teknisi"></textarea>
+                                            <label>Instruksi untuk teknisi (opsional)</label>
+                                            <textarea name="notes" rows="2" placeholder="Jelaskan pekerjaan yang perlu diperiksa"></textarea>
                                         </div>
-                                        <button class="btn btn-primary btn-sm" type="submit">Buat dan tetapkan work order</button>
+                                        <p class="muted small-text">Biaya tenaga kerja dan komponen yang digunakan akan dicatat oleh teknisi setelah pekerjaan dimulai.</p>
+                                        <button class="btn btn-primary btn-sm" type="submit">Teruskan work order</button>
                                     </form>
                                 </details>
                             @else
@@ -89,13 +78,9 @@
                                     @if($ticket->status === 'Pending Verification')
                                         Menunggu verifikasi laporan
                                     @elseif($ticket->status === 'Completed')
-                                        Perbaikan selesai
-                                    @elseif($ticket->status === 'Awaiting Acceptance')
-                                        Menunggu teknisi menerima work order
+                                        Selesai
                                     @elseif($ticket->status === 'Assigned')
-                                        Work order telah diterima teknisi
-                                    @elseif($ticket->status === 'In Progress')
-                                        Perbaikan sedang berlangsung
+                                        Menunggu teknisi memulai pekerjaan
                                     @else
                                         Belum ada work order
                                     @endif
@@ -104,12 +89,11 @@
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="4" class="empty-cell">Belum ada tiket maintenance. Tiket dibuat otomatis saat pengguna mengirimkan laporan kerusakan.</td></tr>
+                    <tr><td colspan="4" class="empty-cell">Belum ada tiket maintenance. Tiket akan dibuat otomatis saat pengguna mengirimkan laporan kerusakan.</td></tr>
                 @endforelse
             </tbody>
         </table>
     </div>
-
     <div class="pagination-wrap">{{ $tickets->links() }}</div>
 </div>
 @endsection

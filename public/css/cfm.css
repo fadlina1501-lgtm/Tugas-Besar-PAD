@@ -26,3 +26,49 @@
     border-color: #fecdd3;
     color: #e11d48;
 }
+/* Dashboard Pengguna Fasilitas hanya menampilkan grafik kondisi aset. */
+.dashboard-grid-single {
+    grid-template-columns: minmax(0, 1fr);
+}
+
+/* Input biaya dan pemakaian komponen khusus teknisi. */
+.work-action-column {
+    display: grid;
+    gap: 14px;
+    min-width: 0;
+}
+.technician-cost-form {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    flex-wrap: wrap;
+    border-top: 1px solid #edf1f5;
+    padding-top: 12px;
+}
+.technician-cost-form .field {
+    flex: 1;
+    min-width: 180px;
+}
+.technician-cost-form .field label {
+    font-size: 9px;
+}
+.technician-cost-form .field input {
+    padding: 8px;
+    min-height: 34px;
+    font-size: 10px;
+}
+.parts-form .price-field {
+    min-width: 150px;
+    flex: 1;
+}
+@media(max-width: 540px) {
+    .technician-cost-form {
+        align-items: stretch;
+    }
+    .technician-cost-form .field {
+        min-width: 100%;
+    }
+    .parts-form .price-field {
+        min-width: 100%;
+    }
+}

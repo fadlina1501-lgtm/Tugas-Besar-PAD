@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\DamageReport;
 use App\Models\MaintenanceTicket;
 use App\Models\MaintenanceType;
 use App\Models\User;
@@ -15,7 +16,7 @@ class MaintenanceTicketController extends Controller
     public function index()
     {
         $tickets = MaintenanceTicket::with([
-            'damageReport.asset.location',
+            'damageReport.asset',
             'damageReport.reporter',
             'workOrder.technician',
             'workOrder.maintenanceType',
@@ -27,18 +28,37 @@ class MaintenanceTicketController extends Controller
         return view('tickets.index', compact('tickets', 'technicians', 'types'));
     }
 
+    /** Fallback for reports created before automatic ticket creation was implemented. */
+    public function storeFromReport(DamageReport $report)
+    {
+        abort_unless($report->status === 'Verified', 422, 'Laporan harus diverifikasi terlebih dahulu.');
+
+        if ($report->ticket()->exists()) {
+            return back()->with('error', 'Tiket untuk laporan ini sudah dibuat otomatis.');
+        }
+
+        $openedAt = now();
+
+        MaintenanceTicket::create([
+            'ticket_number' => 'TCK-'.$openedAt->format('ymd').'-'.Str::upper(Str::random(5)),
+            'damage_report_id' => $report->id,
+            'status' => 'Open',
+            'opened_at' => $openedAt,
+            'sla_deadline' => $openedAt->copy()->addHours(24),
+        ]);
+
+        return redirect()->route('tickets.index')->with('success', 'Tiket untuk laporan lama berhasil dibuat.');
+    }
+
     public function createWorkOrder(Request $request, MaintenanceTicket $ticket)
     {
         $ticket->loadMissing('damageReport');
 
-        abort_unless(
-            $ticket->damageReport && $ticket->damageReport->status === 'Verified',
-            422,
-            'Laporan harus diverifikasi sebelum work order dibuat.'
-        );
+        abort_unless($ticket->damageReport && $ticket->damageReport->status === 'Verified', 422, 'Laporan harus diverifikasi sebelum work order dibuat.');
         abort_unless($ticket->status === 'Open', 422, 'Tiket harus berstatus Open sebelum work order dibuat.');
         abort_if($ticket->workOrder()->exists(), 422, 'Work order untuk tiket ini sudah dibuat.');
 
+        // Sarpras hanya membuat penugasan. Biaya dan komponen aktual dicatat teknisi.
         $data = $request->validate([
             'maintenance_type_id' => ['required', 'exists:maintenance_types,id'],
             'technician_id' => ['required', 'exists:users,id'],
@@ -57,16 +77,14 @@ class MaintenanceTicketController extends Controller
                 'maintenance_ticket_id' => $ticket->id,
                 'maintenance_type_id' => $data['maintenance_type_id'],
                 'technician_id' => $data['technician_id'],
-                'status' => 'Awaiting Acceptance',
+                'status' => 'Assigned',
                 'labor_cost' => 0,
                 'notes' => $data['notes'] ?? null,
             ]);
 
-            // Status Assigned baru diberikan setelah teknisi menerima work order.
-            $ticket->update(['status' => 'Awaiting Acceptance']);
+            $ticket->update(['status' => 'Assigned']);
         });
 
-        return redirect()->route('tickets.index')
-            ->with('success', 'Work order berhasil dibuat dan dikirim kepada teknisi untuk diterima.');
+        return redirect()->route('work-orders.index')->with('success', 'Work order berhasil diteruskan kepada teknisi. Biaya dan suku cadang dicatat oleh teknisi.');
     }
 }

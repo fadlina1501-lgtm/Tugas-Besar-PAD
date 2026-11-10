@@ -37,9 +37,9 @@ class FacilityDemoSeeder extends Seeder
         $corrective = MaintenanceType::firstOrCreate(['name' => 'Corrective Maintenance'], ['description' => 'Perbaikan setelah ditemukan kerusakan.']);
         MaintenanceType::firstOrCreate(['name' => 'Preventive Maintenance'], ['description' => 'Pemeliharaan terjadwal untuk mencegah kerusakan.']);
         MaintenanceType::firstOrCreate(['name' => 'Inspection'], ['description' => 'Pemeriksaan kondisi fasilitas.']);
-        SparePart::updateOrCreate(['sku' => 'SP-AC-001'], ['name' => 'Filter AC', 'unit_price' => 150000, 'stock' => 12, 'unit' => 'unit']);
-        SparePart::updateOrCreate(['sku' => 'SP-AC-002'], ['name' => 'Kapasitor AC', 'unit_price' => 75000, 'stock' => 8, 'unit' => 'unit']);
-        SparePart::updateOrCreate(['sku' => 'SP-LMP-001'], ['name' => 'Lampu LED', 'unit_price' => 45000, 'stock' => 20, 'unit' => 'unit']);
+        SparePart::updateOrCreate(['sku' => 'SP-AC-001'], ['name' => 'Filter AC', 'unit_price' => 150000, 'stock' => 0, 'unit' => 'unit']);
+        SparePart::updateOrCreate(['sku' => 'SP-AC-002'], ['name' => 'Kapasitor AC', 'unit_price' => 75000, 'stock' => 0, 'unit' => 'unit']);
+        SparePart::updateOrCreate(['sku' => 'SP-LMP-001'], ['name' => 'Lampu LED', 'unit_price' => 45000, 'stock' => 0, 'unit' => 'unit']);
 
         $r1 = DamageReport::updateOrCreate(['report_number' => 'DR-DEMO-001'], ['reporter_id' => $pengguna->id, 'asset_id' => $assets[1]->id, 'description' => 'AC menyala tetapi tidak mengeluarkan udara dingin sejak pagi.', 'reported_at' => now()->subHours(3), 'status' => 'Submitted', 'verified_by' => null, 'verification_note' => null]);
         $r2 = DamageReport::updateOrCreate(['report_number' => 'DR-DEMO-002'], ['reporter_id' => $pengguna->id, 'asset_id' => $assets[2]->id, 'description' => 'Proyektor menampilkan gambar yang berkedip ketika digunakan.', 'reported_at' => now()->subDay(), 'status' => 'Verified', 'verified_by' => $sarpras->id, 'verification_note' => 'Perlu pemeriksaan koneksi dan modul proyektor.']);
